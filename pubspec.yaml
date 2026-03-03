@@ -1,0 +1,43 @@
+name: als
+publish_to: 'none'
+version: 3.0.2
+environment:
+  sdk: '>=3.11.0 <4.0.0'
+dependencies:
+  avnc_flutter:
+    git:
+      url: https://github.com/tiny-computer/avnc_flutter.git
+      ref: 4008565259f88fe4613b885979f79e439bc5a420
+  clipboard: any
+  device_info_plus: any
+  dynamic_color: any
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_pty: any
+  http: any
+  intl: any
+  material_symbols_icons: any
+  network_info_plus: any
+  path_provider: any
+  permission_handler: any
+  retry: any
+  shared_preferences: any
+  url_launcher: any
+  wakelock_plus: any
+  webview_flutter: any
+  x11_flutter:
+    git:
+      url: https://github.com/tiny-computer/x11_flutter.git
+      ref: 3b92b515b1ebc32c93e18e8b3a2983656713e4dd
+  xterm: any
+dev_dependencies:
+  flutter_lints: any
+  flutter_test:
+    sdk: flutter
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/

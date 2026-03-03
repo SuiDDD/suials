@@ -1,0 +1,46 @@
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+rootProject.buildDir = '../build'
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(':app')
+    if (project.name == "clipboard") {
+        project.configurations.all {
+            resolutionStrategy.eachDependency { details ->
+                if (details.requested.group == 'androidx.window' && details.requested.name == 'window') {
+                    details.useVersion '1.0.0'
+                }
+            }
+        }
+        project.afterEvaluate {
+            if (project.hasProperty('android')) {
+                project.android {
+                    compileSdkPreview "CANARY"
+                    defaultConfig {
+                        targetSdk 37
+                    }
+                }
+            }
+        }
+    }
+    tasks.withType(com.android.build.gradle.tasks.ProcessAndroidResources) {
+        doLast {
+            def manifestFile = file("${buildDir}/intermediates/merged_manifests/${name.contains('Release') ? 'release' : 'debug'}/AndroidManifest.xml")
+            if (manifestFile.exists()) {
+                def content = manifestFile.getText('UTF-8')
+                content = content.replaceAll('android:testOnly="true"', '')
+                manifestFile.write(content, 'UTF-8')
+            }
+        }
+    }
+}
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}
