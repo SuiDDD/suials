@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'lang/l.dart';
-import 'set.dart';
+import 'package:als/lang/l.dart';
+import 'package:als/set/set.dart';
 
 class SettingsUserManualPage extends StatelessWidget {
   const SettingsUserManualPage({super.key});

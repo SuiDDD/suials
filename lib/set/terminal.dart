@@ -1,6 +1,7 @@
+import 'package:als/boot/globals.dart';
+import 'package:als/boot/utils.dart';
 import 'package:flutter/material.dart';
-import 'boot.dart';
-import 'lang/l.dart';
+import 'package:als/lang/l.dart';
 
 class SettingsTerminalPage extends StatefulWidget {
   const SettingsTerminalPage({super.key});
@@ -14,7 +15,7 @@ class _SettingsTerminalPageState extends State<SettingsTerminalPage> {
     padding: const EdgeInsets.symmetric(vertical: 3),
     child: TextFormField(
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      initialValue: (Util.getGlobal(k) as int).toString(),
+      initialValue: (Util.get(k) as int).toString(),
       decoration: InputDecoration(isDense: true, border: const OutlineInputBorder(), labelText: l, filled: true, fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.2)),
       keyboardType: TextInputType.number,
       validator: (v) => Util.validateBetween(v, n, x, () => G.prefs.setInt(k, int.parse(v!))),
@@ -23,7 +24,7 @@ class _SettingsTerminalPageState extends State<SettingsTerminalPage> {
   Widget _s(String t, String k, {VoidCallback? c}) => SwitchListTile.adaptive(
     contentPadding: EdgeInsets.zero,
     title: Text(t, style: const TextStyle(fontSize: 14)),
-    value: Util.getGlobal(k) as bool,
+    value: Util.get(k) as bool,
     onChanged: (v) => setState(() {
       G.prefs.setBool(k, v);
       c?.call();

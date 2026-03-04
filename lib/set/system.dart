@@ -1,8 +1,10 @@
+import 'package:als/boot/constants.dart';
+import 'package:als/boot/globals.dart';
+import 'package:als/boot/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'boot.dart';
-import 'lang/l.dart';
-import 'set.dart';
+import 'package:als/lang/l.dart';
+import 'package:als/set/set.dart';
 
 class SettingsSystemPage extends StatefulWidget {
   const SettingsSystemPage({super.key});
@@ -16,7 +18,7 @@ class _SettingsSystemPageState extends State<SettingsSystemPage> {
     padding: const EdgeInsets.symmetric(vertical: 3),
     child: TextFormField(
       maxLines: m ? 5 : 1,
-      initialValue: (g ? Util.getGlobal(k) : Util.getCurrentProp(k)).toString(),
+      initialValue: (g ? Util.get(k) : Util.getCurrentProp(k)).toString(),
       keyboardType: n != null ? TextInputType.number : null,
       decoration: InputDecoration(isDense: true, border: const OutlineInputBorder(), labelText: l, suffixIcon: s, filled: true, fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.2)),
       onChanged: n != null ? null : (v) => g ? G.prefs.setString(k, v) : Util.setCurrentProp(k, v),
@@ -28,7 +30,7 @@ class _SettingsSystemPageState extends State<SettingsSystemPage> {
     contentPadding: EdgeInsets.zero,
     title: Text(t, style: const TextStyle(fontSize: 14)),
     subtitle: st != null ? Text(st, style: const TextStyle(fontSize: 12)) : null,
-    value: Util.getGlobal(k) as bool,
+    value: Util.get(k) as bool,
     onChanged: (v) => setState(() => G.prefs.setBool(k, v)),
   );
   void _reset() async {

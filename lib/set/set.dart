@@ -1,13 +1,14 @@
 import 'dart:io';
+import 'package:als/apps.dart';
+import 'package:als/boot/globals.dart';
+import 'package:als/boot/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'boot.dart';
-import 'lang/l.dart';
-import 'set_display_group.dart';
-import 'set_usermanual.dart';
-import 'set_system.dart';
-import 'set_sound.dart';
-import 'apps.dart';
+import 'package:als/lang/l.dart';
+import 'package:als/set/display_group.dart';
+import 'package:als/set/usermanual.dart';
+import 'package:als/set/system.dart';
+import 'package:als/set/sound.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});

@@ -1,12 +1,16 @@
+import 'package:als/boot/constants.dart';
+import 'package:als/boot/globals.dart';
+import 'package:als/boot/ui.dart';
+import 'package:als/boot/utils.dart';
+import 'package:als/boot/workflow.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:xterm/xterm.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'boot.dart';
-import 'lang/l.dart';
-import 'set.dart';
+import 'package:als/lang/l.dart';
+import 'package:als/set/set.dart';
 
 void main() => runApp(const MyApp());
 
@@ -42,7 +46,7 @@ class TerminalPage extends StatelessWidget {
             child: RawGestureDetector(
               gestures: {
                 ForceScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<ForceScaleGestureRecognizer>(() => ForceScaleGestureRecognizer(), (d) {
-                  d.onUpdate = (x) => G.termFontScale.value = (x.scale * (Util.getGlobal("termFontScale") as double)).clamp(0.2, 5);
+                  d.onUpdate = (x) => G.termFontScale.value = (x.scale * (Util.get("termFontScale") as double)).clamp(0.2, 5);
                   d.onEnd = (x) => G.prefs.setDouble("termFontScale", G.termFontScale.value);
                 }),
               },
@@ -52,7 +56,7 @@ class TerminalPage extends StatelessWidget {
               ),
             ),
           ),
-          if (Util.getGlobal("isTerminalCommandsEnabled") as bool) _cmdBar(),
+          if (Util.get("isTerminalCommandsEnabled") as bool) _cmdBar(),
         ],
       ),
     ),
@@ -93,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    Workflow.workflow().then((_) {
+    Workflow.start().then((_) {
       if (mounted) setState(() => _ok = true);
     });
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);

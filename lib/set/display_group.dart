@@ -1,11 +1,11 @@
 import 'dart:math';
+import 'package:als/boot/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'boot.dart';
-import 'lang/l.dart';
-import 'set_graphicsaccel.dart';
-import 'set_output.dart';
-import 'set_terminal.dart';
+import 'package:als/lang/l.dart';
+import 'package:als/set/graphicsaccel.dart';
+import 'package:als/set/output.dart';
+import 'package:als/set/terminal.dart';
 
 class SettingsDisplayGroupPage extends StatelessWidget {
   const SettingsDisplayGroupPage({super.key});

@@ -1,0 +1,19 @@
+[package]
+name = "suitar"
+version = "3.0.2"
+edition = "2024"
+[lib]
+crate-type = ["cdylib"]
+[dependencies]
+num_cpus = "1.17.0"
+tar = "0.4.44"
+xz2 = "0.1.7"
+[profile.release]
+codegen-units = 1
+debug = false
+incremental = false
+lto = "fat"
+opt-level = "z"
+overflow-checks = false
+panic = "abort"
+strip = true

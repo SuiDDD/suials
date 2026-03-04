@@ -1,3 +1,5 @@
+import 'package:als/boot/globals.dart';
+import 'package:als/boot/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:avnc_flutter/avnc_flutter.dart';
 import 'package:x11_flutter/x11_flutter.dart';
@@ -5,9 +7,8 @@ import 'package:material_symbols_icons/symbols.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:clipboard/clipboard.dart';
 import 'package:network_info_plus/network_info_plus.dart';
-import 'boot.dart';
-import 'lang/l.dart';
-import 'set.dart';
+import 'package:als/lang/l.dart';
+import 'package:als/set/set.dart';
 
 class SettingsDisplayPage extends StatefulWidget {
   final VoidCallback showAvncResolutionDialog;
@@ -43,7 +44,7 @@ class _SettingsDisplayPageState extends State<SettingsDisplayPage> {
     contentPadding: EdgeInsets.zero,
     title: Text(t, style: const TextStyle(fontSize: 14)),
     subtitle: st != null ? Text(st, style: const TextStyle(fontSize: 12)) : null,
-    value: Util.getGlobal(k) as bool,
+    value: Util.get(k) as bool,
     onChanged: oc,
   );
   Widget _btn(IconData i, String t, VoidCallback? p, {double w = double.infinity}) => SizedBox(
@@ -102,7 +103,7 @@ class _SettingsDisplayPageState extends State<SettingsDisplayPage> {
               st: _l.disableVNC,
               oc: (v) => setState(() {
                 G.prefs.setBool("useX11", v);
-                if (!v && (Util.getGlobal("dri3") as bool)) G.prefs.setBool("dri3", false);
+                if (!v && (Util.get("dri3") as bool)) G.prefs.setBool("dri3", false);
               }),
             ),
             _btn(Symbols.tune_rounded, _l.termuxX11Preferences, () => X11Flutter.launchX11PrefsPage()),

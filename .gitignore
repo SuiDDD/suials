@@ -28,4 +28,5 @@ migrate_working_dir/
 *.p12
 .pub/
 .pub-cache/
+suitar/target/
 .svn/

@@ -1,7 +1,8 @@
+import 'package:als/boot/globals.dart';
+import 'package:als/boot/utils.dart';
 import 'package:flutter/material.dart';
-import 'boot.dart';
-import 'lang/l.dart';
-import 'set.dart';
+import 'package:als/lang/l.dart';
+import 'package:als/set/set.dart';
 
 class SettingsGraphicsAccelPage extends StatefulWidget {
   const SettingsGraphicsAccelPage({super.key});
@@ -23,7 +24,7 @@ class _SettingsGraphicsAccelPageState extends State<SettingsGraphicsAccelPage> {
     contentPadding: EdgeInsets.zero,
     title: Text(t, style: const TextStyle(fontSize: 14)),
     subtitle: st != null ? Text(st, style: const TextStyle(fontSize: 12)) : null,
-    value: Util.getGlobal(k) as bool,
+    value: Util.get(k) as bool,
     onChanged: oc,
   );
   @override
@@ -47,7 +48,7 @@ class _SettingsGraphicsAccelPageState extends State<SettingsGraphicsAccelPage> {
               st: _l.applyOnNextLaunch,
               oc: (v) => setState(() {
                 G.prefs.setBool("turnip", v);
-                if (!v && (Util.getGlobal("dri3") as bool)) G.prefs.setBool("dri3", false);
+                if (!v && (Util.get("dri3") as bool)) G.prefs.setBool("dri3", false);
               }),
             ),
             _s(
@@ -55,7 +56,7 @@ class _SettingsGraphicsAccelPageState extends State<SettingsGraphicsAccelPage> {
               "dri3",
               st: _l.applyOnNextLaunch,
               oc: (v) {
-                if (v && !((Util.getGlobal("turnip") as bool) && (Util.getGlobal("useX11") as bool))) {
+                if (v && !((Util.get("turnip") as bool) && (Util.get("useX11") as bool))) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text(_l.dri3Requirement)));
                   return;
                 }

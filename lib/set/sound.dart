@@ -1,7 +1,8 @@
+import 'package:als/boot/globals.dart';
+import 'package:als/boot/utils.dart';
 import 'package:flutter/material.dart';
-import 'boot.dart';
-import 'lang/l.dart';
-import 'set.dart';
+import 'package:als/lang/l.dart';
+import 'package:als/set/set.dart';
 
 class SettingsSoundPage extends StatefulWidget {
   const SettingsSoundPage({super.key});
@@ -15,7 +16,7 @@ class _SettingsSoundPageState extends State<SettingsSoundPage> {
     padding: const EdgeInsets.symmetric(vertical: 3),
     child: TextFormField(
       maxLines: m ? 5 : 1,
-      initialValue: (g ? Util.getGlobal(k) : Util.getCurrentProp(k)).toString(),
+      initialValue: (g ? Util.get(k) : Util.getCurrentProp(k)).toString(),
       keyboardType: n != null ? TextInputType.number : null,
       decoration: InputDecoration(isDense: true, border: const OutlineInputBorder(), labelText: l, suffixIcon: s, filled: true, fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.2)),
       onChanged: n != null ? null : (v) => g ? G.prefs.setString(k, v) : Util.setCurrentProp(k, v),
