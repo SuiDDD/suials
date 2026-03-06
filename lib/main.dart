@@ -1,6 +1,5 @@
-import 'package:als/boot/constants.dart';
 import 'package:als/boot/globals.dart';
-import 'package:als/boot/ui.dart';
+import 'package:als/boot/splash.dart';
 import 'package:als/boot/utils.dart';
 import 'package:als/boot/workflow.dart';
 import 'package:dynamic_color/dynamic_color.dart';
@@ -56,33 +55,9 @@ class TerminalPage extends StatelessWidget {
               ),
             ),
           ),
-          if (Util.get("isTerminalCommandsEnabled") as bool) _cmdBar(),
         ],
       ),
     ),
-  );
-  Widget _cmdBar() => Padding(
-    padding: const EdgeInsets.all(6),
-    child: Row(
-      children: [
-        AnimatedBuilder(
-          animation: G.keyboard,
-          builder: (_, __) => ToggleButtons(constraints: const BoxConstraints(minWidth: 42, minHeight: 27), tapTargetSize: MaterialTapTargetSize.shrinkWrap, borderRadius: BorderRadius.circular(6), isSelected: [G.keyboard.ctrl, G.keyboard.alt, G.keyboard.shift], onPressed: (i) => i == 0 ? G.keyboard.ctrl = !G.keyboard.ctrl : (i == 1 ? G.keyboard.alt = !G.keyboard.alt : G.keyboard.shift = !G.keyboard.shift), children: const [Text('Ctrl'), Text('Alt'), Text('Shift')]),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: SizedBox(
-            height: 27,
-            child: ListView.separated(scrollDirection: Axis.horizontal, itemCount: D.termCommands.length, separatorBuilder: (_, __) => const SizedBox(width: 3), itemBuilder: (_, i) => _b(D.termCommands[i]["name"] as String, () => G.termPtys[G.currentContainer]!.terminal.keyInput(D.termCommands[i]["key"] as TerminalKey))),
-          ),
-        ),
-      ],
-    ),
-  );
-  Widget _b(String text, VoidCallback tap) => OutlinedButton(
-    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 9), minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-    onPressed: tap,
-    child: Text(text),
   );
 }
 
@@ -118,7 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
             )
-          : const LoadingPage(),
+          : const BootPage(),
     );
   }
 }

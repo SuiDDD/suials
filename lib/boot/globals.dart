@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_pty/flutter_pty.dart';
 import 'terminal.dart';
+
 class G {
   static late final String dataPath;
   static Pty? audioPty;

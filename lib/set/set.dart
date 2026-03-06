@@ -21,7 +21,6 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
   late L _l;
   String _ipAddress = "...";
   late AnimationController _controller;
-
   @override
   void initState() {
     super.initState();
@@ -73,7 +72,6 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
     onChanged: c,
     decoration: InputDecoration(labelText: l, isDense: true, border: const OutlineInputBorder(), filled: true, fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(100)),
   );
-
   Widget _tile(IconData i, String t, {String? s, Widget? p, Color? ic}) => ListTile(
     dense: true,
     contentPadding: null,
@@ -82,7 +80,6 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
     trailing: s != null && s.isNotEmpty ? Text(s, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6))) : null,
     onTap: p != null ? () => Navigator.of(context).push(MaterialPageRoute(builder: (c) => p)) : null,
   );
-
   void _exec(String cmd) {
     Util.termWrite(cmd);
     G.pageIndex.value = 0;
@@ -93,7 +90,6 @@ class _SettingPageState extends State<SettingPage> with SingleTickerProviderStat
     _l = L.of(context)!;
     final List cmds = Util.getCurrentProp("commands");
     final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
-
     return GestureDetector(
       onHorizontalDragEnd: (d) => d.primaryVelocity! > 500 ? G.pageIndex.value = 0 : null,
       child: ListView(

@@ -11,11 +11,13 @@ dependencies:
   clipboard: any
   device_info_plus: any
   dynamic_color: any
+  file_picker: any
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
   flutter_pty: any
+  google_fonts: ^8.0.2
   http: any
   intl: any
   material_symbols_icons: any

@@ -1,37 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:xterm/xterm.dart';
 
 class D {
   static const baseCommands = ["sudo dpkg --configure -a && sudo apt update && sudo apt full-upgrade -y && sudo apt autoremove -y", "neofetch -L && neofetch --off", "stopvnc\nexit\nexit"];
-
   static List<Map<String, String>> get commands => List.generate(baseCommands.length, (i) => {"name": "", "command": baseCommands[i]});
-
-  static const termCommands = [
-    {"name": "Esc", "key": TerminalKey.escape},
-    {"name": "Tab", "key": TerminalKey.tab},
-    {"name": "↑", "key": TerminalKey.arrowUp},
-    {"name": "↓", "key": TerminalKey.arrowDown},
-    {"name": "←", "key": TerminalKey.arrowLeft},
-    {"name": "→", "key": TerminalKey.arrowRight},
-    {"name": "Del", "key": TerminalKey.delete},
-    {"name": "PgUp", "key": TerminalKey.pageUp},
-    {"name": "PgDn", "key": TerminalKey.pageDown},
-    {"name": "Home", "key": TerminalKey.home},
-    {"name": "End", "key": TerminalKey.end},
-    {"name": "F1", "key": TerminalKey.f1},
-    {"name": "F2", "key": TerminalKey.f2},
-    {"name": "F3", "key": TerminalKey.f3},
-    {"name": "F4", "key": TerminalKey.f4},
-    {"name": "F5", "key": TerminalKey.f5},
-    {"name": "F6", "key": TerminalKey.f6},
-    {"name": "F7", "key": TerminalKey.f7},
-    {"name": "F8", "key": TerminalKey.f8},
-    {"name": "F9", "key": TerminalKey.f9},
-    {"name": "F10", "key": TerminalKey.f10},
-    {"name": "F11", "key": TerminalKey.f11},
-    {"name": "F12", "key": TerminalKey.f12},
-  ];
   static const String boot = r"""$DATA_DIR/bin/proot -H -0 --change-id=1000:1000 --kernel-release=6.1.0 --pwd=/home/tiny --rootfs=$CONTAINER_DIR --kill-on-exit --sysvipc -L --link2symlink -p -b --mount=/system --mount=/apex --mount=/sys --mount=/data --mount=/storage --mount=/proc --mount=/dev --mount=$CONTAINER_DIR/tmp:/dev/shm --mount=/dev/urandom:/dev/random --mount=/proc/self/fd:/dev/fd --mount=/proc/self/fd/0:/dev/stdin --mount=/proc/self/fd/1:/dev/stdout --mount=/proc/self/fd/2:/dev/stderr --mount=/dev/null:/dev/tty0 --mount=/dev/null:/proc/sys/kernel/cap_last_cap --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/.tmoe-container.stat:/proc/stat --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/.tmoe-container.version:/proc/version --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/bus:/proc/bus --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/buddyinfo:/proc/buddyinfo --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/cgroups:/proc/cgroups --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/consoles:/proc/consoles --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/crypto:/proc/crypto --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/devices:/proc/devices --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/diskstats:/proc/diskstats --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/execdomains:/proc/execdomains --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/fb:/proc/fb --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/filesystems:/proc/filesystems --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/interrupts:/proc/interrupts --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/iomem:/proc/iomem --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/ioports:/proc/ioports --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/kallsyms:/proc/kallsyms --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/keys:/proc/keys --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/key-users:/proc/key-users --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/kpageflags:/proc/kpageflags --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/loadavg:/proc/loadavg --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/locks:/proc/locks --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/misc:/proc/misc --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/modules:/proc/modules --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/pagetypeinfo:/proc/pagetypeinfo --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/partitions:/proc/partitions --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/sched_debug:/proc/sched_debug --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/softirqs:/proc/softirqs --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/timer_list:/proc/timer_list --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/uptime:/proc/uptime --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/vmallocinfo:/proc/vmallocinfo --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/vmstat:/proc/vmstat --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/zoneinfo:/proc/zoneinfo --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/meminfo:/proc/meminfo --mount=$CONTAINER_DIR/usr/local/etc/tmoe-linux/proot_proc/stat:/proc/stat $EXTRA_MOUNT /usr/bin/env -i HOSTNAME=TINY HOME=/home/tiny USER=tiny TERM=xterm-256color SDL_IM_MODULE=fcitx XMODIFIERS=@im=fcitx QT_IM_MODULE=fcitx GTK_IM_MODULE=fcitx TMOE_CHROOT=false TMOE_PROOT=true TMPDIR=/tmp MOZ_FAKE_NO_SANDBOX=1 QTWEBENGINE_DISABLE_SANDBOX=1 DISPLAY=:4 PULSE_SERVER=tcp:127.0.0.1:4718 LANG=zh_CN.UTF-8 SHELL=/bin/bash PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/sbin:/usr/sbin:/usr/games:/usr/local/games $EXTRA_OPT /bin/bash -l""";
   static final commandButtonStyle = OutlinedButton.styleFrom(tapTargetSize: MaterialTapTargetSize.shrinkWrap, minimumSize: Size.zero, padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2));
   static final controlButtonStyle = OutlinedButton.styleFrom(

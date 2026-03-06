@@ -9,12 +9,10 @@ import 'package:als/set/terminal.dart';
 
 class SettingsDisplayGroupPage extends StatelessWidget {
   const SettingsDisplayGroupPage({super.key});
-
   void _resDialog(BuildContext context, L l) {
     final s = WidgetsBinding.instance.platformDispatcher.views.first.physicalSize;
     final w0 = max(s.width, s.height), h0 = min(s.width, s.height);
     var w = (w0 * 0.75).round().toString(), h = (h0 * 0.75).round().toString();
-
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -47,14 +45,12 @@ class SettingsDisplayGroupPage extends StatelessWidget {
     onChanged: c,
     decoration: InputDecoration(labelText: l, isDense: true, border: const OutlineInputBorder(), filled: true, fillColor: Theme.of(ctx).colorScheme.surfaceContainerHighest.withAlpha(100)),
   );
-
   Widget _btn(BuildContext ctx, IconData i, String t, VoidCallback p) => Expanded(
     child: OutlinedButton(
       onPressed: p,
       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(i, size: 18), const SizedBox(width: 4), Text(t)]),
     ),
   );
-
   @override
   Widget build(BuildContext context) {
     final l = L.of(context)!;

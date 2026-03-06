@@ -19,7 +19,6 @@ class SettingsDisplayPage extends StatefulWidget {
 
 class _SettingsDisplayPageState extends State<SettingsDisplayPage> {
   late L _l;
-
   void _copy() async {
     if (G.wasX11Enabled) return _msg(_l.x11InvalidHint);
     final ip = await NetworkInfo().getWifiIP();

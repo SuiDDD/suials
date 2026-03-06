@@ -13,6 +13,7 @@ import 'globals.dart';
 import 'utils.dart';
 import 'setup.dart';
 import 'terminal.dart';
+
 class Workflow {
   static Future<void> launchX11() async => await X11Flutter.launchX11Page();
   static Future<void> launchAvnc() async => await AvncFlutter.launchUsingUri(Util.getCurrentProp("vncUri"), resizeRemoteDesktop: Util.get("avncResizeDesktop"), resizeRemoteDesktopScaleFactor: pow(4, Util.get("avncScaleFactor")).toDouble());
@@ -20,6 +21,7 @@ class Workflow {
     G.controller.loadRequest(Uri.parse(Util.getCurrentProp("vncUrl")));
     if (G.homePageStateContext.mounted) Navigator.push(G.homePageStateContext, MaterialPageRoute(builder: (c) => WebViewWidget(controller: G.controller)));
   }
+
   static Future<void> init() async {
     G.dataPath = (await getApplicationSupportDirectory()).path;
     G.termPtys = {};
@@ -34,6 +36,7 @@ class Workflow {
     G.controller = WebViewController()..setJavaScriptMode(JavaScriptMode.unrestricted);
     WakelockPlus.toggle(enable: Util.get("wakelock") ?? false);
   }
+
   static Future<void> start() async {
     await Permission.storage.request();
     await init();
