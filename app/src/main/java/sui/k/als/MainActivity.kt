@@ -19,7 +19,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import java.io.File
 
-val LocalAppFont = staticCompositionLocalOf<FontFamily> { FontFamily.Monospace }
+val LocalAppFont = staticCompositionLocalOf<FontFamily> { FontFamily.Default }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,11 +35,11 @@ class MainActivity : ComponentActivity() {
                 try {
                     FontFamily(
                         Typeface.createFromAsset(
-                            context.assets, "fonts/RobotoMono-Regular.ttf"
+                            context.assets, "fonts/GoogleSansFlex.ttf"
                         )
                     )
                 } catch (e: Exception) {
-                    FontFamily.Monospace
+                    FontFamily.Default
                 }
             }
             var currentScreen by rememberSaveable { mutableStateOf("splash") }

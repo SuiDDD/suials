@@ -13,6 +13,8 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import com.termux.terminal.TerminalSession
@@ -100,6 +102,8 @@ fun TerminalScreen() {
                         0
                     )?.let { s.write(it.coerceToText(context).toString()) }
                 }
+
+                override fun getTerminalCursorStyle() = 2
             })
     }
 
@@ -112,8 +116,8 @@ fun TerminalScreen() {
 
     val viewClient = remember {
         object : TermViewStub() {
-            private var size = 27f
-            override fun onScale(f: Float) = (size * f).coerceIn(12f, 100f)
+            private var size = 18f
+            override fun onScale(f: Float) = (size * f).coerceAtLeast(1f)
                 .also { size = it; terminalView.setTextSize(it.toInt()) }.let { 1f }
 
             override fun onSingleTapUp(e: MotionEvent) {
@@ -129,21 +133,24 @@ fun TerminalScreen() {
 
     LaunchedEffect(session) {
         terminalView.requestFocus()
+        terminalView.setTerminalCursorBlinkerRate(300)
+        terminalView.setTerminalCursorBlinkerState(true, true)
+
         termRun("su")
         termRun("cd /data/als && clear && ./busybox")
     }
 
     DisposableEffect(currentFont) {
         terminalView.apply {
-            setTextSize(36)
+            setTextSize(18)
             setTypeface(
                 try {
-                    Typeface.createFromAsset(context.assets, "fonts/RobotoMono-Regular.ttf")
+                    Typeface.createFromAsset(context.assets, "fonts/GoogleSansCode.ttf")
                 } catch (_: Exception) {
-                    Typeface.MONOSPACE
+                    Typeface.DEFAULT
                 }
             )
-            setBackgroundColor(0xFF121212.toInt())
+            setBackgroundColor(Color.Black.toArgb())
             setTerminalViewClient(viewClient)
             attachSession(session)
             isFocusable = true
@@ -155,5 +162,6 @@ fun TerminalScreen() {
 
     AndroidView(factory = { terminalView }, modifier = Modifier.fillMaxSize(), update = {
         it.requestFocus()
+        it.setTerminalCursorBlinkerState(true, false)
     })
 }
