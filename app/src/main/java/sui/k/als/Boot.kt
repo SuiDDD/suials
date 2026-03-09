@@ -4,6 +4,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -40,12 +41,12 @@ fun BootScreen(onFinished: () -> Unit) {
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             File(ctx.cacheDir, "busybox").apply { if (!exists()) ctx.assets.open("busybox").use { it.copyTo(outputStream()) }; setExecutable(true) }
-            info = ProcessBuilder("su", "-c", "echo \"$(uname -r)\n$(getprop ro.product.cpu.abi)\n$(getenforce)\n$(df /data | awk 'NR==2 {printf \\\"%.2f GB\\\", \$4/1024/1024}')\n$(cat /sys/class/power_supply/battery/capacity)% [$(cat /sys/class/power_supply/battery/status)]\"").start().inputStream.bufferedReader().readText()
+            info = ProcessBuilder("su", "-c", "echo \"$(uname -m)\n$(getenforce)\n$(df /data | awk 'NR==2 {printf \"%.2f GB\", $4/1024/1024}') Free\n$(cat /sys/class/power_supply/battery/capacity)% [$(cat /sys/class/power_supply/battery/status)]\n$(uname -r)\"").start().inputStream.bufferedReader().readText()
         }
     }
     Column(Modifier.fillMaxSize().background(Color.Black).pointerInput(sub) {
         detectVerticalDragGestures { _, d -> if (d > 15f) idx = (idx - 1).coerceAtLeast(0) else if (d < -15f) idx = (idx + 1).coerceAtMost(items.size - 1) }
-    }.clickable(interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }, indication = null) {
+    }.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
         if (!sub) when (idx) { 0 -> { sub = true; idx = 0 }; 1 -> onFinished() }
         else when (idx) { 0 -> picker.launch("*/*"); 1 -> { sub = false; idx = 0 } }
     }) {
