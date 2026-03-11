@@ -1,25 +1,19 @@
 package sui.k.als
 
-import android.graphics.Typeface
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
+import androidx.compose.ui.text.font.*
+import androidx.core.view.*
+import sui.k.als.boot.BootScreen
+import sui.k.als.boot.Splash
+import sui.k.als.term.TerminalScreen
 import java.io.File
 
-val LocalAppFont = staticCompositionLocalOf<FontFamily> { FontFamily.Default }
+val localAppFont = staticCompositionLocalOf<FontFamily> { FontFamily.Default }
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,25 +24,15 @@ class MainActivity : ComponentActivity() {
             hide(WindowInsetsCompat.Type.systemBars())
         }
         setContent {
-            val context = LocalContext.current
-            val customFont = remember {
-                try {
-                    FontFamily(
-                        Typeface.createFromAsset(
-                            context.assets, "fonts/GoogleSansFlex.ttf"
-                        )
-                    )
-                } catch (e: Exception) {
-                    FontFamily.Default
-                }
-            }
-            var currentScreen by rememberSaveable { mutableStateOf("splash") }
-            CompositionLocalProvider(LocalAppFont provides customFont) {
-                when (currentScreen) {
-                    "splash" -> SplashScreen {
-                        currentScreen = if (File("/data/als/dev").exists()) "terminal" else "boot"
-                    }
-                    "boot" -> BootScreen { currentScreen = "terminal" }
+            var switch by rememberSaveable { mutableStateOf("splash") }
+            CompositionLocalProvider(localAppFont provides remember {
+                runCatching { FontFamily(Font("fonts/GoogleSansFlex.ttf", assets)) }.getOrDefault(FontFamily.Default)
+            }) {
+                when (switch) {
+                    "splash" -> Splash(onTimeout = {
+                        switch = if (File("/data/als/dev").exists()) "terminal" else "boot"
+                    })
+                    "boot" -> BootScreen { switch = "terminal" }
                     else -> TerminalScreen()
                 }
             }
