@@ -1,4 +1,4 @@
-package sui.k.als.term
+package sui.k.als.tty
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -9,13 +9,22 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
@@ -24,18 +33,21 @@ import com.termux.view.TerminalViewClient
 import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
-internal var sessionInstance: TerminalSession? = null
+internal var ttySession: TerminalSession? = null
 private val ioExecutor = Executors.newFixedThreadPool(4) { r ->
     Thread(r, "als-pwr-blast").apply { priority = 10 }
 }
-fun termRun(command: String) {
-    ioExecutor.execute { sessionInstance?.write("$command\n") }
+fun runCmd(cmd: String) {
+    ioExecutor.execute { ttySession?.write("$cmd\n") }
 }
 @Composable
-fun TerminalScreen() {
+fun TTYScreen() {
     val context = LocalContext.current
-    val terminalView = remember { TerminalView(context, null) }
+    val ttyView = remember { TerminalView(context, null) }
     val dirtyBit = remember { AtomicBoolean(false) }
+    val density = LocalDensity.current
+    var imeHeightPx by remember { mutableIntStateOf(0) }
+    val systemImeHeight = WindowInsets.ime.asPaddingValues().calculateBottomPadding()
     val session = remember {
         val dir = context.filesDir.absolutePath.also { File(it).mkdirs() }
         TerminalSession(
@@ -44,7 +56,7 @@ fun TerminalScreen() {
             arrayOf("-i"),
             arrayOf("TERM=xterm-256color", "HOME=$dir", "LANG=en_US.UTF-8", "PATH=/system/bin:/system/xbin:/data/als"),
             500000,
-            object : TermSessionStub() {
+            object : TTYSessionStub() {
                 override fun onTextChanged(s: TerminalSession) {
                     dirtyBit.lazySet(true)
                 }
@@ -58,15 +70,15 @@ fun TerminalScreen() {
                     item?.let { clip -> s?.let { ioExecutor.execute { it.write(clip.coerceToText(context).toString()) } } }
                 }
                 override fun getTerminalCursorStyle() = 2
-            })
+            } as TerminalSessionClient)
     }
     DisposableEffect(Unit) {
         val choreographer = Choreographer.getInstance()
         val frameCallback = object : Choreographer.FrameCallback {
             override fun doFrame(frameTimeNanos: Long) {
                 if (dirtyBit.compareAndSet(true, false)) {
-                    terminalView.invalidate()
-                    terminalView.onScreenUpdated()
+                    ttyView.invalidate()
+                    ttyView.onScreenUpdated()
                 }
                 choreographer.postFrameCallback(this)
             }
@@ -75,39 +87,39 @@ fun TerminalScreen() {
         onDispose { choreographer.removeFrameCallback(frameCallback) }
     }
     val viewClient = remember {
-        object : TermViewStub() {
+        object : TTYViewStub() {
             private var size = 18f
             override fun onScale(f: Float) = (size * f).coerceAtLeast(1f).also {
-                size = it; terminalView.setTextSize(it.toInt())
+                size = it; ttyView.setTextSize(it.toInt())
             }.let { 1f }
             override fun onSingleTapUp(e: MotionEvent) {
-                if (!PanelKeyState.isFullKeyboardVisible) {
-                    terminalView.requestFocus()
+                if (!IMEState.isFullKeyboardVisible) {
+                    ttyView.requestFocus()
                     (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
-                        .showSoftInput(terminalView, InputMethodManager.SHOW_IMPLICIT)
+                        .showSoftInput(ttyView, InputMethodManager.SHOW_IMPLICIT)
                 }
             }
             override fun shouldEnforceCharBasedInput() = true
-        }
+        } as TerminalViewClient
     }
     DisposableEffect(session) {
-        sessionInstance = session
-        onDispose { if (sessionInstance == session) sessionInstance = null }
+        ttySession = session
+        onDispose { if (ttySession == session) ttySession = null }
     }
     LaunchedEffect(session) {
-        terminalView.apply { setLayerType(View.LAYER_TYPE_HARDWARE, null) }
+        ttyView.apply { setLayerType(View.LAYER_TYPE_HARDWARE, null) }
         ioExecutor.execute {
             val pid = Process.myPid()
-            termRun("su -M")
-            termRun($$"renice -n -20 -p $$pid && ionice -c 1 -n 0 -p $$pid && taskset -p f0 $$pid && for tid in /proc/$$pid/task/*; do t=${tid##*/}; echo $t > /dev/stune/top-app/tasks; echo $t > /dev/cpuset/top-app/tasks; done && cd /data/als && clear && ./busybox")
+            runCmd("su -M")
+            runCmd("renice -n -20 -p $pid && ionice -c 1 -n 0 -p $pid && taskset -p f0 $pid && for tid in /proc/$pid/task/*; do t=\${tid##*/}; echo \$t > /dev/stune/top-app/tasks; echo \$t > /dev/cpuset/top-app/tasks; done && cd /data/als && clear && ./busybox")
         }
     }
     DisposableEffect(context) {
-        terminalView.apply {
+        ttyView.apply {
             setTextSize(18)
             setTypeface(try {
                 Typeface.createFromAsset(context.assets, "fonts/GoogleSansCode.ttf")
-            } catch (_: Exception) { Typeface.MONOSPACE })
+            } catch (_: Exception) { Typeface.MONOSPACE } )
             setBackgroundColor(Color.Black.toArgb())
             setTerminalViewClient(viewClient)
             attachSession(session)
@@ -117,18 +129,20 @@ fun TerminalScreen() {
         }
         onDispose { ioExecutor.execute { session.finishIfRunning() } }
     }
-    androidx.compose.foundation.layout.Column(modifier = Modifier.fillMaxSize().imePadding()) {
+    Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
         AndroidView(
-            factory = { terminalView },
-            modifier = Modifier.weight(1f),
+            factory = { ttyView },
+            modifier = Modifier.fillMaxSize().padding(bottom = if (IMEState.isFloating) 0.dp else systemImeHeight + with(density) { imeHeightPx.toDp() }),
             update = {
-                if (PanelKeyState.isFullKeyboardVisible) it.clearFocus() else it.requestFocus()
+                if (IMEState.isFullKeyboardVisible) it.clearFocus() else it.requestFocus()
             }
         )
-        PanelKeys()
+        Box(modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = systemImeHeight).onGloballyPositioned { imeHeightPx = it.size.height }) {
+            TTYIME()
+        }
     }
 }
-open class TermSessionStub : TerminalSessionClient {
+open class TTYSessionStub : TerminalSessionClient {
     override fun onTextChanged(s: TerminalSession) {}
     override fun onTitleChanged(s: TerminalSession) {}
     override fun onSessionFinished(s: TerminalSession) {}
@@ -147,10 +161,10 @@ open class TermSessionStub : TerminalSessionClient {
     override fun logStackTrace(t: String, e: Exception) {}
     override fun logStackTraceWithMessage(t: String, m: String, e: Exception) {}
 }
-open class TermViewStub : TerminalViewClient {
-    override fun readControlKey(): Boolean = PanelKeyState.consumeCtrl()
-    override fun readAltKey(): Boolean = PanelKeyState.consumeAlt()
-    override fun readShiftKey(): Boolean = PanelKeyState.consumeShift()
+open class TTYViewStub : TerminalViewClient {
+    override fun readControlKey(): Boolean = IMEState.consumeCtrl()
+    override fun readAltKey(): Boolean = IMEState.consumeAlt()
+    override fun readShiftKey(): Boolean = IMEState.consumeShift()
     override fun readFnKey(): Boolean = false
     override fun onKeyDown(i: Int, e: KeyEvent, s: TerminalSession): Boolean {
         if (i == KeyEvent.KEYCODE_BACK) return shouldBackButtonBeMappedToEscape()

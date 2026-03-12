@@ -10,7 +10,7 @@ import androidx.compose.ui.text.font.*
 import androidx.core.view.*
 import sui.k.als.boot.BootScreen
 import sui.k.als.boot.Splash
-import sui.k.als.term.TerminalScreen
+import sui.k.als.tty.TTYScreen
 import java.io.File
 
 val localAppFont = staticCompositionLocalOf<FontFamily> { FontFamily.Default }
@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
                         switch = if (File("/data/als/dev").exists()) "terminal" else "boot"
                     })
                     "boot" -> BootScreen { switch = "terminal" }
-                    else -> TerminalScreen()
+                    else -> TTYScreen()
                 }
             }
         }

@@ -2,22 +2,22 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
-
 android {
     namespace = "sui.k.als"
-    compileSdk = 36
+    compileSdkPreview = "CANARY"
+
     defaultConfig {
         applicationId = "sui.k.als"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
         ndk {
             abiFilters.add("arm64-v8a")
         }
     }
-
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -34,7 +34,6 @@ android {
         compose = true
     }
 }
-
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -44,7 +43,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation("com.github.termux:termux-app:v0.119.0-beta.3")
+    implementation(libs.termux.app)
     implementation(libs.guava.listenablefuture)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
