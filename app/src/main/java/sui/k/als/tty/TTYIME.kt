@@ -4,9 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
@@ -15,18 +12,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.unit.Dp
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 import kotlin.math.roundToInt
 object IMEState {
     var isCtrlActive by mutableStateOf(false)
@@ -107,41 +102,27 @@ fun TTYIME() {
     }
 }
 @Composable
-private fun RowScope.KeyBase(label: String, width: androidx.compose.ui.unit.Dp?, weight: Float?, isModifier: Boolean = false, isControl: Boolean = false, isTopBar: Boolean = false) {
+private fun RowScope.KeyBase(label: String, width: Dp?, weight: Float?, isModifier: Boolean = false, isControl: Boolean = false, isTopBar: Boolean = false) {
     var isPressed by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
     var repeatJob by remember { mutableStateOf<Job?>(null) }
     val view = LocalView.current
-    val viewConfig = LocalViewConfiguration.current
     val displayText = when {
-        isControl -> "☫"
+        isControl -> ""
         isModifier || label.length > 1 || (!label[0].isLetter() && !symbolMap.containsKey(label)) -> label
         IMEState.isShiftActive -> symbolMap[label] ?: label.uppercase()
         IMEState.isCapsActive && label[0].isLetter() -> label.uppercase()
         else -> label
     }
     val isActive = when(label) { "Ctrl" -> IMEState.isCtrlActive; "Shift" -> IMEState.isShiftActive; "Alt" -> IMEState.isAltActive; "Caps" -> IMEState.isCapsActive; else -> false }
-    val baseModifier = if (weight != null) Modifier.weight(weight) else if (width != null) Modifier.width(width) else Modifier
     Box(
-        modifier = baseModifier
+        modifier = (if (weight != null) Modifier.weight(weight) else if (width != null) Modifier.width(width) else Modifier)
             .fillMaxHeight()
             .pointerInput(isControl) {
-                if (isControl) {
-                    detectDragGestures(
-                        onDragStart = {
-                            if (IMEState.isFullKeyboardVisible) {
-                                IMEState.isFloating = true
-                                view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                            }
-                        },
-                        onDrag = { change, dragAmount ->
-                            if (IMEState.isFloating) {
-                                change.consume()
-                                IMEState.keyboardOffset += IntOffset(dragAmount.x.roundToInt(), dragAmount.y.roundToInt())
-                            }
-                        }
-                    )
-                }
+                if (isControl) detectDragGestures(
+                    onDragStart = { if (IMEState.isFullKeyboardVisible) { IMEState.isFloating = true; view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS) } },
+                    onDrag = { change, dragAmount -> if (IMEState.isFloating) { change.consume(); IMEState.keyboardOffset += IntOffset(dragAmount.x.roundToInt(), dragAmount.y.roundToInt()) } }
+                )
             }
             .pointerInput(label) {
                 detectTapGestures(
@@ -149,22 +130,10 @@ private fun RowScope.KeyBase(label: String, width: androidx.compose.ui.unit.Dp?,
                         isPressed = true
                         view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                         if (!isControl && !isTopBar) {
-                            val startTime = System.currentTimeMillis()
+                            val start = System.currentTimeMillis()
                             repeatJob = coroutineScope.launch {
-                                if (isModifier) {
-                                    when(label) {
-                                        "Ctrl" -> IMEState.isCtrlActive = !IMEState.isCtrlActive
-                                        "Shift" -> IMEState.isShiftActive = !IMEState.isShiftActive
-                                        "Alt" -> IMEState.isAltActive = !IMEState.isAltActive
-                                        "Caps" -> IMEState.isCapsActive = !IMEState.isCapsActive
-                                    }
-                                } else {
-                                    while (true) {
-                                        processKey(label)
-                                        val elapsed = System.currentTimeMillis() - startTime
-                                        delay(when { elapsed < 300 -> 300L; elapsed < 3000 -> 30L; else -> 9L })
-                                    }
-                                }
+                                if (isModifier) when(label) { "Ctrl" -> IMEState.isCtrlActive = !IMEState.isCtrlActive; "Shift" -> IMEState.isShiftActive = !IMEState.isShiftActive; "Alt" -> IMEState.isAltActive = !IMEState.isAltActive; "Caps" -> IMEState.isCapsActive = !IMEState.isCapsActive }
+                                else while (true) { processKey(label); val d = System.currentTimeMillis() - start; delay(if (d < 300) 300L else if (d < 3000) 30L else 9L) }
                             }
                         }
                         try { awaitRelease() } finally { isPressed = false; repeatJob?.cancel() }
@@ -172,31 +141,16 @@ private fun RowScope.KeyBase(label: String, width: androidx.compose.ui.unit.Dp?,
                     onTap = {
                         if (isControl) {
                             IMEState.isFullKeyboardVisible = !IMEState.isFullKeyboardVisible
-                            if (!IMEState.isFullKeyboardVisible) {
-                                IMEState.isFloating = false
-                                IMEState.keyboardOffset = IntOffset(0, 0)
-                            }
-                        } else if (isTopBar || isModifier) {
-                            if (isModifier) {
-                                when(label) {
-                                    "Ctrl" -> IMEState.isCtrlActive = !IMEState.isCtrlActive
-                                    "Shift" -> IMEState.isShiftActive = !IMEState.isShiftActive
-                                    "Alt" -> IMEState.isAltActive = !IMEState.isAltActive
-                                    "Caps" -> IMEState.isCapsActive = !IMEState.isCapsActive
-                                }
-                            } else processKey(label)
-                        } else if (!isModifier) {
-                            processKey(label)
-                        }
+                            if (!IMEState.isFullKeyboardVisible) { IMEState.isFloating = false; IMEState.keyboardOffset = IntOffset(0, 0) }
+                        } else if (isModifier) when(label) { "Ctrl" -> IMEState.isCtrlActive = !IMEState.isCtrlActive; "Shift" -> IMEState.isShiftActive = !IMEState.isShiftActive; "Alt" -> IMEState.isAltActive = !IMEState.isAltActive; "Caps" -> IMEState.isCapsActive = !IMEState.isCapsActive }
+                        else processKey(label)
                     }
                 )
             }
             .padding(1.dp)
-            .background(if (isPressed || isActive) Color(0xFF444444) else Color(0xFF1A1A1A), RectangleShape),
+            .background(if (isPressed || isActive) Color(0xFF444444) else Color(0xFF1A1A1A)),
         contentAlignment = Alignment.Center
-    ) {
-        Text(displayText, color = Color.White, fontSize = 9.sp, softWrap = false)
-    }
+    ) { Text(displayText, color = Color.White, fontSize = 9.sp, softWrap = false) }
 }
 private fun processKey(label: String) {
     val code = keyCodes[label]
