@@ -1,4 +1,5 @@
 package sui.k.als.tty
+
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -16,7 +17,13 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,13 +40,16 @@ import com.termux.view.TerminalViewClient
 import java.io.File
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
+
 internal var ttySession: TerminalSession? = null
 private val ioExecutor = Executors.newFixedThreadPool(4) { r ->
     Thread(r, "als-pwr-blast").apply { priority = 10 }
 }
+
 fun runCmd(cmd: String) {
     ioExecutor.execute { ttySession?.write("$cmd\n") }
 }
+
 @Composable
 fun TTYScreen() {
     val context = LocalContext.current
@@ -54,21 +64,40 @@ fun TTYScreen() {
             "/system/bin/sh",
             dir,
             arrayOf("-i"),
-            arrayOf("TERM=xterm-256color", "HOME=$dir", "LANG=en_US.UTF-8", "PATH=/system/bin:/system/xbin:/data/als"),
+            arrayOf(
+                "TERM=xterm-256color",
+                "HOME=$dir",
+                "LANG=en_US.UTF-8",
+                "PATH=/system/bin:/system/xbin:/data/als"
+            ),
             500000,
             object : TTYSessionStub() {
                 override fun onTextChanged(s: TerminalSession) {
                     dirtyBit.lazySet(true)
                 }
+
                 override fun onCopyTextToClipboard(s: TerminalSession, t: String) {
                     (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
                         .setPrimaryClip(ClipData.newPlainText("T", t))
                 }
+
                 override fun onPasteTextFromClipboard(s: TerminalSession?) {
-                    val item = (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
-                        .primaryClip?.getItemAt(0)
-                    item?.let { clip -> s?.let { ioExecutor.execute { it.write(clip.coerceToText(context).toString()) } } }
+                    val item =
+                        (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
+                            .primaryClip?.getItemAt(0)
+                    item?.let { clip ->
+                        s?.let {
+                            ioExecutor.execute {
+                                it.write(
+                                    clip.coerceToText(
+                                        context
+                                    ).toString()
+                                )
+                            }
+                        }
+                    }
                 }
+
                 override fun getTerminalCursorStyle() = 2
             } as TerminalSessionClient)
     }
@@ -92,6 +121,7 @@ fun TTYScreen() {
             override fun onScale(f: Float) = (size * f).coerceAtLeast(1f).also {
                 size = it; ttyView.setTextSize(it.toInt())
             }.let { 1f }
+
             override fun onSingleTapUp(e: MotionEvent) {
                 if (!IMEState.isFullKeyboardVisible) {
                     ttyView.requestFocus()
@@ -99,6 +129,7 @@ fun TTYScreen() {
                         .showSoftInput(ttyView, InputMethodManager.SHOW_IMPLICIT)
                 }
             }
+
             override fun shouldEnforceCharBasedInput() = true
         } as TerminalViewClient
     }
@@ -117,9 +148,13 @@ fun TTYScreen() {
     DisposableEffect(context) {
         ttyView.apply {
             setTextSize(18)
-            setTypeface(try {
-                Typeface.createFromAsset(context.assets, "fonts/GoogleSansCode.ttf")
-            } catch (_: Exception) { Typeface.MONOSPACE } )
+            setTypeface(
+                try {
+                    Typeface.createFromAsset(context.assets, "fonts/GoogleSansCode.ttf")
+                } catch (_: Exception) {
+                    Typeface.MONOSPACE
+                }
+            )
             setBackgroundColor(Color.Black.toArgb())
             setTerminalViewClient(viewClient)
             attachSession(session)
@@ -129,19 +164,30 @@ fun TTYScreen() {
         }
         onDispose { ioExecutor.execute { session.finishIfRunning() } }
     }
-    Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
         AndroidView(
             factory = { ttyView },
-            modifier = Modifier.fillMaxSize().padding(bottom = if (IMEState.isFloating) 0.dp else systemImeHeight + with(density) { imeHeightPx.toDp() }),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = if (IMEState.isFloating) 0.dp else systemImeHeight + with(density) { imeHeightPx.toDp() }),
             update = {
                 if (IMEState.isFullKeyboardVisible) it.clearFocus() else it.requestFocus()
             }
         )
-        Box(modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = systemImeHeight).onGloballyPositioned { imeHeightPx = it.size.height }) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = systemImeHeight)
+                .onGloballyPositioned { imeHeightPx = it.size.height }) {
             TTYIME()
         }
     }
 }
+
 open class TTYSessionStub : TerminalSessionClient {
     override fun onTextChanged(s: TerminalSession) {}
     override fun onTitleChanged(s: TerminalSession) {}
@@ -161,6 +207,7 @@ open class TTYSessionStub : TerminalSessionClient {
     override fun logStackTrace(t: String, e: Exception) {}
     override fun logStackTraceWithMessage(t: String, m: String, e: Exception) {}
 }
+
 open class TTYViewStub : TerminalViewClient {
     override fun readControlKey(): Boolean = IMEState.consumeCtrl()
     override fun readAltKey(): Boolean = IMEState.consumeAlt()
@@ -170,6 +217,7 @@ open class TTYViewStub : TerminalViewClient {
         if (i == KeyEvent.KEYCODE_BACK) return shouldBackButtonBeMappedToEscape()
         return false
     }
+
     override fun onKeyUp(i: Int, e: KeyEvent): Boolean = false
     override fun onCodePoint(i: Int, b: Boolean, s: TerminalSession): Boolean = false
     override fun onSingleTapUp(e: MotionEvent) {}
