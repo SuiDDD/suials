@@ -149,7 +149,7 @@ fun Splash(
                                 )
                             }
                         } else {
-                            delay(3000)
+                            delay(1800)
                             withContext(Dispatchers.Main) { onTimeout() }
                         }
                     }

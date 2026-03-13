@@ -52,55 +52,13 @@ object IMEState {
     fun consumeAlt(): Boolean = isAltActive
 }
 
-private val keyCodes = mapOf(
-    "Tab" to "\u0009",
-    "Esc" to "\u001b",
-    "Enter" to "\r",
-    "Back" to "\u007f",
-    " " to " ",
-    "↑" to "\u001b[A",
-    "↓" to "\u001b[B",
-    "←" to "\u001b[D",
-    "→" to "\u001b[C",
-    "Home" to "\u001b[1~",
-    "End" to "\u001b[4~",
-    "Del" to "\u001b[3~",
-    "F1" to "\u001bOP",
-    "F2" to "\u001bOQ",
-    "F3" to "\u001bOR",
-    "F4" to "\u001bOS",
-    "F5" to "\u001b[15~",
-    "F6" to "\u001b[17~",
-    "F7" to "\u001b[18~",
-    "F8" to "\u001b[19~",
-    "F9" to "\u001b[20~",
-    "F10" to "\u001b[21~",
-    "F11" to "\u001b[23~",
-    "F12" to "\u001b[24~"
-)
-private val symbolMap = mapOf(
-    "`" to "~",
-    "1" to "!",
-    "2" to "@",
-    "3" to "#",
-    "4" to "$",
-    "5" to "%",
-    "6" to "^",
-    "7" to "&",
-    "8" to "*",
-    "9" to "(",
-    "0" to ")",
-    "-" to "_",
-    "=" to "+",
-    "[" to "{",
-    "]" to "}",
-    "\\" to "|",
-    ";" to ":",
-    "'" to "\"",
-    "," to "<",
-    "." to ">",
-    "/" to "?"
-)
+private val keyCodes =
+    "Tab·\t¦Esc·\u001b¦Enter·\r¦Back·\u007f¦ · ¦↑·\u001b[A¦↓·\u001b[B¦←·\u001b[D¦→·\u001b[C¦Home·\u001b[1~¦End·\u001b[4~¦Del·\u001b[3~¦F1·\u001bOP¦F2·\u001bOQ¦F3·\u001bOR¦F4·\u001bOS¦F5·\u001b[15~¦F6·\u001b[17~¦F7·\u001b[18~¦F8·\u001b[19~¦F9·\u001b[20~¦F10·\u001b[21~¦F11·\u001b[23~¦F12·\u001b[24~".split(
+        '¦'
+    ).associate { it.split('·').let { p -> p[0] to p[1] } }
+private val symbolMap =
+    "`~·1!·2@·3#·4$·5%·6^·7&·8*·9(·0)·-_·=+·[{·]}·\\|·;:·'\"·,<·.>·/?".split('·')
+        .associate { it[0].toString() to it[1].toString() }
 
 @Composable
 fun TTYIME() {
@@ -118,76 +76,49 @@ fun TTYIME() {
         modifier = if (IMEState.isFloating) {
             Modifier
                 .offset { IMEState.keyboardOffset }
-                .size(width = 400.dp, height = panelHeight)
+                .size(width = 270.dp, height = panelHeight)
         } else {
             Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-        }
-    ) {
+        }) {
         Column(
-            Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.Black)
         ) {
-            if (!IMEState.isFullKeyboardVisible) {
-                val configuration = LocalConfiguration.current
-                val isLandscape =
-                    configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-                val topBarHeightFraction = if (isLandscape) 1f / 6f else 1f / 9f
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(topBarHeightFraction)
-                        .background(Color.Black)
-                ) {
-                    listOf(
-                        listOf("Ctrl", "Alt", "Shift", "Esc", "", "Tab", "F1", "F2", "F3"),
-                        listOf("F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"),
-                        listOf("Home", "End", "Del", "Back", "Enter", "↑", "↓", "←", "→")
-                    ).forEach { rowKeys ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f)
-                        ) {
-                            rowKeys.forEach { keyLabel ->
-                                KeyBase(
-                                    label = keyLabel,
-                                    width = 0.dp,
-                                    weight = 1f,
-                                    isModifier = keyLabel in listOf("Ctrl", "Alt", "Shift"),
-                                    isControl = keyLabel == ""
-                                )
-                            }
+            if (!IMEState.isFullKeyboardVisible) Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(81.dp)
+                    .background(Color.Black)
+            ) {
+                listOf(
+                    listOf("Ctrl", "Alt", "Shift", "Esc", "", "Tab", "F1", "F2", "F3"),
+                    listOf("F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"),
+                    listOf("Home", "End", "Del", "Back", "Enter", "↑", "↓", "←", "→")
+                ).forEach { rowKeys ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ) {
+                        rowKeys.forEach { keyLabel ->
+                            KeyBase(
+                                label = keyLabel,
+                                width = 0.dp,
+                                weight = 1f,
+                                isModifier = keyLabel in listOf("Ctrl", "Alt", "Shift"),
+                                isControl = keyLabel == "",
+                            )
                         }
                     }
                 }
             } else {
-                val layout = listOf(
-                    listOf(
-                        "Esc",
-                        "F1",
-                        "F2",
-                        "F3",
-                        "F4",
-                        "F5",
-                        "F6",
-                        "",
-                        "F7",
-                        "F8",
-                        "F9",
-                        "F10",
-                        "F11",
-                        "F12",
-                        "Del"
-                    ),
-                    listOf("`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "Back"),
-                    listOf("Tab", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]", "\\"),
-                    listOf("Caps", "A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'", "Enter"),
-                    listOf("Shift", "Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "↑"),
-                    listOf("Ctrl", "Alt", "Home", " ", "End", "←", "↓", "→")
-                )
+                val layout =
+                    "Esc·F1·F2·F3·F4·F5·F6··F7·F8·F9·F10·F11·F12·Del¦`·1·2·3·4·5·6·7·8·9·0·-·=·Back¦Tab·Q·W·E·R·T·Y·U·I·O·P·[·]·\\¦Caps·A·S·D·F·G·H·J·K·L·;·'·Enter¦Shift·Z·X·C·V·B·N·M·,·.·/·↑¦Ctrl·Alt·Home· ·End·←·↓·→".split(
+                        '¦'
+                    ).map { it.split('·') }
                 Column(
                     Modifier
                         .fillMaxWidth()
@@ -252,23 +183,19 @@ private fun RowScope.KeyBase(
             .fillMaxHeight()
             .pointerInput(label) {
                 if (isControl) {
-                    detectDragGestures(
-                        onDragStart = {
-                            if (IMEState.isFullKeyboardVisible) {
-                                IMEState.isFloating = true
-                                view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                            }
-                        },
-                        onDrag = { change, dragAmount ->
-                            if (IMEState.isFloating) {
-                                change.consume()
-                                IMEState.keyboardOffset += IntOffset(
-                                    dragAmount.x.roundToInt(),
-                                    dragAmount.y.roundToInt()
-                                )
-                            }
+                    detectDragGestures(onDragStart = {
+                        if (IMEState.isFullKeyboardVisible) {
+                            IMEState.isFloating = true
+                            view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                         }
-                    )
+                    }, onDrag = { change, dragAmount ->
+                        if (IMEState.isFloating) {
+                            change.consume()
+                            IMEState.keyboardOffset += IntOffset(
+                                dragAmount.x.roundToInt(), dragAmount.y.roundToInt()
+                            )
+                        }
+                    })
                 }
             }
             .pointerInput(label) {
@@ -314,13 +241,11 @@ private fun RowScope.KeyBase(
                                 repeatJob?.cancel()
                             }
                         }
-                    }
-                )
+                    })
             }
             .padding(1.dp)
             .background(if (isPressed || isActive) Color(0xFF444444) else Color(0xFF1A1A1A)),
-        contentAlignment = Alignment.Center
-    ) {
+        contentAlignment = Alignment.Center) {
         Text(displayText, color = Color.White, fontSize = 9.sp, softWrap = false)
     }
 }
